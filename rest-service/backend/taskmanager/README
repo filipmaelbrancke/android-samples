@@ -1,4 +1,9 @@
-This is your new Play 2.0 application
+Task manager
 =====================================
 
-This file will be packaged with your application, when using `play dist`.
+Simple, Play-framework-based, task manager web app.
+Will serve as back-end for Android sample app.
+
+This app has:
+- very basic CRUD functionality: webpage to manage tasks in the underlying database
+- endpoints that return the tasks in the database as json
