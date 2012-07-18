@@ -3,12 +3,15 @@
 # ~~~~
 
 # Home page
-GET     /                           controllers.Application.index()
+GET		/							controllers.Application.index()
 
-# Tasks
+# Tasks webpage
 GET		/tasks						controllers.Application.tasks()
 POST	/tasks						controllers.Application.newTask()
 POST	/tasks/:id/delete			controllers.Application.deleteTask(id: Long)
 
+# Json
+GET		/tasksJson					controllers.Application.tasksAsJson()
+
 # Map static resources from the /public folder to the /assets URL path
-GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET		/assets/*file				controllers.Assets.at(path="/public", file)

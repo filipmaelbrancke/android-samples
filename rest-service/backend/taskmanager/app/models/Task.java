@@ -11,6 +11,8 @@ import play.db.ebean.Model;
 @Entity
 public class Task extends Model {
 	
+	private static final long serialVersionUID = 4781377571624040428L;
+
 	@Id
 	public Long id;
 	
