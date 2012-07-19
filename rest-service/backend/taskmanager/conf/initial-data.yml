@@ -1,0 +1,17 @@
+              
+# Task
+
+tasks:
+    
+    - !!models.Task
+        label:      Fix the documentation
+                        
+    - !!models.Task
+        label:      Prepare the beta release
+
+    - !!models.Task
+        label:      Write some tests
+                        
+    - !!models.Task
+        label:      Release the secret project
+            

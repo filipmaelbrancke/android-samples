@@ -1,14 +1,15 @@
 package controllers;
 
+import static play.libs.Json.toJson;
+
 import java.util.List;
 
 import models.Task;
-import play.*;
-import play.data.*;
-import play.mvc.*;
+import play.data.Form;
+import play.mvc.Controller;
+import play.mvc.Result;
 
 import views.html.*;
-import static play.libs.Json.toJson;
 
 public class Application extends Controller {
 

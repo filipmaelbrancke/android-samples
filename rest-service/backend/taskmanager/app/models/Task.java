@@ -32,5 +32,10 @@ public class Task extends Model {
 	public static void delete(Long id) {
 		find.ref(id).delete();
 	}
+	
+	@Override
+	public String toString() {
+		return "Task(" + id + ") :: " + label;
+	}
 
 }
