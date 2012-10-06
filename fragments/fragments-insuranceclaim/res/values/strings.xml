@@ -1,0 +1,11 @@
+<resources>
+
+    <string name="app_name">Insurance Claim</string>
+    <string name="title_vehicle_detail">Insurance Claim Form</string>
+    <string name="save">Save</string>
+    <string name="waiver_saved">The insurance form has been saved to %s.</string>
+    <string name="about">About</string>
+    <string name="about_content">An simple example of the Fragments API!</string>
+    <string name="reset">Reset</string>
+
+</resources>

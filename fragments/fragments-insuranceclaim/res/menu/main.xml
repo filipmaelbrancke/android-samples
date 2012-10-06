@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu
+  xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@+id/reset" android:showAsAction="always|withText" android:title="@string/reset" android:icon="@drawable/ic_action_turn_left"/>
+    <item android:id="@+id/about" android:showAsAction="ifRoom|withText" android:title="@string/about" android:icon="@drawable/ic_action_news" />
+</menu>
