@@ -33,9 +33,8 @@ public class VehicleDetailFragment extends SherlockFragment {
 	public static final String ARG_ITEM_ID = "item_id";
 
 	/**
-	 * The dummy content this fragment is presenting.
+	 * The vehicle this fragment is presenting.
 	 */
-	//private DummyContent.DummyItem mItem;
 	private VehicleContent.Vehicle mVehicle;
 	
 	/**
@@ -55,7 +54,7 @@ public class VehicleDetailFragment extends SherlockFragment {
 		super.onCreate(savedInstanceState);
 
 		if (getArguments().containsKey(ARG_ITEM_ID)) {
-			// Load the dummy content specified by the fragment
+			// Load the vehicle content specified by the fragment
 			// arguments. In a real-world scenario, use a Loader
 			// to load content from a content provider.
 			mVehicle = VehicleContent.VEHICLE_MAP.get(getArguments().getString(
@@ -75,8 +74,6 @@ public class VehicleDetailFragment extends SherlockFragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		/*View rootView = inflater.inflate(R.layout.fragment_vehicle_detail,
-				container, false);*/
 		View rootView = inflater.inflate(R.layout.fragment_vehicle_damage,
 				container, false);
 		
@@ -86,10 +83,8 @@ public class VehicleDetailFragment extends SherlockFragment {
 		Button save = (Button) rootView.findViewById(R.id.save);
 		save.setOnClickListener(saveClickListener);
 
-		// Show the dummy content as text in a TextView.
+		// Show the vehicle.
 		if (mVehicle != null) {
-			/*((TextView) rootView.findViewById(R.id.vehicle_detail))
-					.setText(mVehicle.name);*/
 			signatureView.setBackgroundResource(mVehicle.image);
 		}
 

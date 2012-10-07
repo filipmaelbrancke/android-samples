@@ -75,8 +75,6 @@ public class VehicleListFragment extends SherlockListFragment {
 		// TODO: replace with a real list adapter.
 		int layout = (Build.VERSION.SDK_INT >= 11) ? android.R.layout.simple_list_item_activated_1
 				: android.R.layout.simple_list_item_1;
-		//setListAdapter(new ArrayAdapter<DummyContent.DummyItem>(getActivity(),
-		//		layout, android.R.id.text1, DummyContent.ITEMS));
 		setListAdapter(new ArrayAdapter<VehicleContent.Vehicle>(getActivity(),
 						layout, android.R.id.text1, VehicleContent.VEHICLES));
 	}
@@ -121,7 +119,6 @@ public class VehicleListFragment extends SherlockListFragment {
 
 		// Notify the active callbacks interface (the activity, if the
 		// fragment is attached to one) that an item has been selected.
-		//mCallbacks.onItemSelected(DummyContent.ITEMS.get(position).id);
 		mCallbacks.onItemSelected(VehicleContent.VEHICLES.get(position).id);
 	}
 
