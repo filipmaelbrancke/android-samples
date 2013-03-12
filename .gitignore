@@ -17,6 +17,17 @@ gen/
 # Local configuration file (sdk path, etc)
 local.properties
 
+# IDE - buildtool - system...
+.project
+.classpath
+.settings
+target
+.idea
+*.iml
+*.iws
+*.ipr
+.DS_Store
+
 # ||||| Java - Play framework |||||
 
 target/

@@ -7,7 +7,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.util.AttributeSet;
 import android.util.FloatMath;
-import android.util.Log;
 import android.view.View;
 import android.view.animation.AnimationUtils;
 
@@ -23,12 +22,14 @@ public class DynamicChartView extends View {
     private static final int[] DISTANCES = { 1, 2, 5 };
 
     private static final float GRAPH_SMOOTHNESS = 0.15f;
+    private static final float DEFAULT_SPRINGINESS = 70f;
+    private static final float DEFAULT_DAMPINGRATIO = 0.30f;
 
-    private float[] datapoints = new float[] {};
-    //private Dynamics[] datapoints;
+    //private float[] datapoints = new float[] {};
+    private Dynamics[] datapoints;
     private Paint paint = new Paint();
 
-    /*private Runnable animator = new Runnable() {
+    private Runnable animator = new Runnable() {
         public void run() {
             boolean needNewFrame = false;
             final long now = AnimationUtils.currentAnimationTimeMillis();
@@ -43,28 +44,47 @@ public class DynamicChartView extends View {
             }
             invalidate();
         }
-    };*/
+    };
 
     public DynamicChartView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        // In edit mode it's nice to have some demo data, so add that here.
+        if (this.isInEditMode()) {
+            setDatapoints(new float[]{ 1, 2, 3});
+        }
     }
 
-    public void setDatapoints(float[] datapoints) {
-        this.datapoints = datapoints;
-        invalidate();
+    public void setDatapoints(float[] newDatapoints) {
+        //this.datapoints = datapoints;
+        //invalidate();
+        final long now = AnimationUtils.currentAnimationTimeMillis();
+        if (datapoints == null || datapoints.length != newDatapoints.length) {
+            datapoints = new Dynamics[newDatapoints.length];
+            for (int i = 0; i < newDatapoints.length; i++) {
+                datapoints[i] = new Dynamics(DEFAULT_SPRINGINESS, DEFAULT_DAMPINGRATIO);
+                datapoints[i].setPosition(newDatapoints[i], now);
+                datapoints[i].setTargetPosition(newDatapoints[i], now);
+            }
+            invalidate();
+        } else {
+            for (int i = 0; i < newDatapoints.length; i++) {
+                datapoints[i].setTargetPosition(newDatapoints[i], now);
+            }
+            removeCallbacks(animator);
+            post(animator);
+        }
     }
 
     @Override
     protected void onDraw(Canvas canvas) {
-        drawBackground(canvas);
-        drawChart(canvas);
+        final float maxValue = getMax(datapoints);
+        drawBackground(canvas, maxValue);
+        drawChart(canvas, maxValue);
     }
 
-    private void drawBackground(Canvas canvas) {
-        float maxValue = getMax(this.datapoints);
-        Log.d(TAG, "maxValue = " + maxValue);
+    private void drawBackground(Canvas canvas, float maxValue) {
+        //float maxValue = getMax(this.datapoints);
         int range = getLineDistance(maxValue);
-        Log.d(TAG, "range = " + range);
 
         paint.setStyle(Paint.Style.STROKE);
         paint.setColor(Color.GRAY);
@@ -74,11 +94,11 @@ public class DynamicChartView extends View {
         }
     }
 
-    private void drawChart(Canvas canvas) {
+    private void drawChart(Canvas canvas, float maxValue) {
         Path path = new Path();
-        path.moveTo(getXposition(0), getYPosition(datapoints[0]));
+        path.moveTo(getXposition(0), getYPosition(datapoints[0].getPosition()));
         for (int i = 1; i < datapoints.length; i++) {
-            path.lineTo(getXposition(i), getYPosition(datapoints[i]));
+            path.lineTo(getXposition(i), getYPosition(datapoints[i].getPosition()));
         }
 
         paint.setStyle(Paint.Style.STROKE);
@@ -90,11 +110,11 @@ public class DynamicChartView extends View {
         paint.setShadowLayer(0, 0, 0, 0);
     }
 
-    private float getMax(float[] array) {
-        float max = array[0];
+    private float getMax(Dynamics[] array) {
+        float max = array[0].getPosition();
         for(int i = 1; i < array.length; i++) {
-            if (array[i] > max) {
-                max = array[i];
+            if (array[i].getPosition() > max) {
+                max = array[i].getPosition();
             }
         }
         return max;
@@ -117,7 +137,6 @@ public class DynamicChartView extends View {
             }
         } while (numberOfLines < MIN_LINES || numberOfLines > MAX_LINES);
 
-        Log.d(TAG, "line distance = " + distance);
         return distance;
     }
 
