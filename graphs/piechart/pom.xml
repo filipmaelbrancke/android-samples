@@ -9,8 +9,7 @@
     <name>piechart</name>
 
     <properties>
-        <platform.version> 4.1.1.4
-            </platform.version>
+        <platform.version>4.1.1.4</platform.version>
     </properties>
 
     <dependencies>
@@ -19,6 +18,11 @@
             <artifactId>android</artifactId>
             <version>${platform.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.github.japgolly.android</groupId>
+            <artifactId>svg-android</artifactId>
+            <version>2.0.1</version>
         </dependency>
     </dependencies>
 
@@ -36,7 +40,7 @@
                     <sdk>
                         <platform>16</platform>
                     </sdk>
-                                        <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
                 </configuration>
                 <extensions>true</extensions>
             </plugin>
@@ -45,8 +49,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.5.1</version>
                 <configuration>
-                    <source>1.5</source>
-                    <target>1.5</target>
+                    <source>1.6</source>
+                    <target>1.6</target>
                 </configuration>
             </plugin>
         </plugins>

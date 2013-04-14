@@ -50,6 +50,7 @@ public class RotatingChart extends ViewGroup {
     // the index of the current item
     private int mCurrentItem = 0;
     private boolean mAutoCenterInSlice;
+    private CurrentItemChangeListener mCurrentItemChangeListener = sDummyCallback;
 
     /**
      * The initial fling velocity is divided by this amount.
@@ -60,6 +61,13 @@ public class RotatingChart extends ViewGroup {
      * Duration of the auto-centering animation.
      */
     public static final int AUTOCENTER_ANIM_DURATION = 250;
+
+    /**
+     * Callback interface for current item change detection.
+     */
+    public interface CurrentItemChangeListener {
+        void onCurrentItemChanged(RotatingChart source, int currentItem);
+    }
 
     public RotatingChart(Context context) {
         super(context);
@@ -142,6 +150,57 @@ public class RotatingChart extends ViewGroup {
             addItem("Test 3", 2, Color.RED);
             addItem("Test 4", 3, Color.BLACK);
             addItem("Test 5", 1, Color.MAGENTA);
+        }
+    }
+
+    /**
+     * Returns the index of the currently selected data item.
+     *
+     * @return The index of the currently selected data item (zero-based)
+     */
+    public int getCurrentItem() {
+        return mCurrentItem;
+    }
+
+    /**
+     * Set the currently selected item. This function will set the current selection
+     * and rotate the chart.
+     *
+     * @param currentItem The index of the item to select (zero-based)
+     */
+    public void setCurrentItem(int currentItem) {
+        setCurrentItem(currentItem, true);
+    }
+
+    /**
+     * Set the currently selected item by index. Optionally, if will rotate the current
+     * view into position. This function is for internal use -- the scrollIntoPlace option
+     * is always true for external callers.
+     *
+     * @param currentItem The index of the current item
+     * @param scrollIntoPlace True if the chart should rotate until the current item is in place
+     *                        (= centered). False otherwise. If this parameter is false, the chart
+     *                        rotation will not change.
+     */
+    private void setCurrentItem(int currentItem, boolean scrollIntoPlace) {
+        mCurrentItem = currentItem;
+        mCurrentItemChangeListener.onCurrentItemChanged(this, currentItem);
+        if (scrollIntoPlace) {
+            centerOnCurrentItem();
+        }
+        invalidate();
+    }
+
+    /**
+     * Register a callback to be invoked when the currently selected item changes.
+     *
+     * @param listener The current item change listener to attach to this view. Can be null.
+     */
+    public void setCurrentItemChangeListener(CurrentItemChangeListener listener) {
+        if (listener == null) {
+            mCurrentItemChangeListener = sDummyCallback;
+        } else {
+            mCurrentItemChangeListener = listener;
         }
     }
 
@@ -321,9 +380,15 @@ public class RotatingChart extends ViewGroup {
     private void onDataChanged() {
         // When the data changes, we have to recalculate all of the angles.
         int currentAngle = 0;
+        int lastItemIndex = mData.size() - 1;
+        int i = 0;
         for (ChartItem item : mData) {
             item.mStartAngle = currentAngle;
-            item.mEndAngle = (int) ((float) currentAngle + item.mValue * 360.0f / mTotal);
+            if (i == lastItemIndex) {
+                item.mEndAngle = 360;
+            } else {
+                item.mEndAngle = (int) ((float) currentAngle + item.mValue * 360.0f / mTotal);
+            }
             currentAngle = item.mEndAngle;
 
             // Recalculate the gradient shaders. There are three values in this
@@ -346,7 +411,9 @@ public class RotatingChart extends ViewGroup {
                             1.0f
                     }
             );
+            i++;
         }
+
         calcCurrentItem();
         onScrollFinished();
     }
@@ -356,12 +423,19 @@ public class RotatingChart extends ViewGroup {
      */
     private void onScrollFinished() {
         if (mAutoCenterInSlice) {
-            // TODO : center on current item
+            centerOnCurrentItem();
 
         } else {
             // TODO : decelerate
             mChartView.stopHardwareAcceleration();
         }
+    }
+
+    /**
+     * Animate the chart so that it centers the slice of the currently
+     * selected item.
+     */
+    private void centerOnCurrentItem() {
     }
 
     /**
@@ -542,4 +616,11 @@ public class RotatingChart extends ViewGroup {
 
         return l * sign;
     }
+
+    private static CurrentItemChangeListener sDummyCallback = new CurrentItemChangeListener() {
+        @Override
+        public void onCurrentItemChanged(RotatingChart source, int currentItem) {
+            // dummy
+        }
+    };
 }
