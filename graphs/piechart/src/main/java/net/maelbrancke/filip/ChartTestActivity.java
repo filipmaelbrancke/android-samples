@@ -25,8 +25,8 @@ public class ChartTestActivity extends Activity {
         chart.addItem("Test 3", 2, Color.RED);
         chart.addItem("Test 4", 3, Color.DKGRAY);
         chart.addItem("Test 5", 1, Color.MAGENTA);
-        chart.addItem("Test 6", 2, Color.LTGRAY);
-        chart.addItem("Test 7", 3, Color.YELLOW);
+        /*chart.addItem("Test 6", 2, Color.LTGRAY);
+        chart.addItem("Test 7", 3, Color.YELLOW);*/
     }
 
 }

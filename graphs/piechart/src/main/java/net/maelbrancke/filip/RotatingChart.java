@@ -1,5 +1,7 @@
 package net.maelbrancke.filip;
 
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.*;
@@ -16,6 +18,8 @@ import java.util.List;
 
 /**
  * Custom view that shows a chart.
+ *
+ * Unsupported below API v11 (for now...?)
  */
 public class RotatingChart extends ViewGroup {
 
@@ -49,8 +53,14 @@ public class RotatingChart extends ViewGroup {
 
     // the index of the current item
     private int mCurrentItem = 0;
-    private boolean mAutoCenterInSlice;
+    // The angle at which we measure the current item. (the 'pointer' of the chart)
+    private int mCurrentItemAngle;
+
+    // !!!
+    private boolean mAutoCenterInSlice = true;
+
     private CurrentItemChangeListener mCurrentItemChangeListener = sDummyCallback;
+    private ObjectAnimator mAutoCenterAnimator;
 
     /**
      * The initial fling velocity is divided by this amount.
@@ -142,6 +152,37 @@ public class RotatingChart extends ViewGroup {
         mDetector.setIsLongpressEnabled(false);
 
 
+        // Set up the animator for the RotatingChartRotation property. This is used
+        // to auto center the chart's orientation after the user lets it go.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mAutoCenterAnimator = ObjectAnimator.ofInt(RotatingChart.this, "ChartRotation", 0);
+
+            // Add a listener to hook the onAnimationEnd event so that we can do some cleanup
+            // when the pie stops moving
+            mAutoCenterAnimator.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationCancel(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationStart(Animator animator) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animator) {
+                    mChartView.stopHardwareAcceleration();
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animator) {
+
+                }
+            });
+        }
+
+
 
         // In edit mode: add some demo data
         if (this.isInEditMode()) {
@@ -205,7 +246,7 @@ public class RotatingChart extends ViewGroup {
     }
 
     @Override
-    protected void onLayout(boolean b, int i, int i2, int i3, int i4) {
+    protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
         // Do nothing. Do not call the superclass method--that would start a layout pass
         // on this view's children. RotatingChart lays out its children in onSizeChanged().
     }
@@ -252,6 +293,8 @@ public class RotatingChart extends ViewGroup {
 
         // Set the dimensions for the component pieces
 
+        mCurrentItemAngle = 270;
+
         // Account for padding
         float xPadding = (float) (getPaddingLeft() + getPaddingRight());
         float yPadding = (float) (getPaddingTop() + getPaddingBottom());
@@ -295,7 +338,10 @@ public class RotatingChart extends ViewGroup {
      * Force a stop to the chart motion. Called when the user taps during a fling.
      */
     private void stopScrolling() {
-        // TODO
+        //
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mAutoCenterAnimator.cancel();
+        }
 
 
         onScrollFinished();
@@ -321,6 +367,7 @@ public class RotatingChart extends ViewGroup {
         mChartView.rotateTo(rotation);
 
         // ...
+        calcCurrentItem();
     }
 
     /**
@@ -436,6 +483,17 @@ public class RotatingChart extends ViewGroup {
      * selected item.
      */
     private void centerOnCurrentItem() {
+        Log.d(TAG, "Center on current item");
+        ChartItem current = mData.get(getCurrentItem());
+        int targetAngle = current.mStartAngle + (current.mEndAngle - current.mStartAngle) / 2;
+        targetAngle -= mCurrentItemAngle;
+        if (targetAngle < 90 && mChartRotation > 180) targetAngle += 360;
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB) {
+            mAutoCenterAnimator.setIntValues(targetAngle);
+            mAutoCenterAnimator.setDuration(AUTOCENTER_ANIM_DURATION).start();
+        }
+
     }
 
     /**
@@ -443,7 +501,18 @@ public class RotatingChart extends ViewGroup {
      * field accordingly.
      */
     private void calcCurrentItem() {
-        // TODO
+        //
+        int pointerAngle = (mCurrentItemAngle + 360 + mChartRotation) % 360;
+        // go through the slices and check
+        for (int i = 0; i < mData.size(); ++i) {
+            ChartItem item = mData.get(i);
+            if (item.mStartAngle <= pointerAngle && pointerAngle <= item.mEndAngle) {
+                if (i != mCurrentItem) {
+                    setCurrentItem(i, false);
+                }
+                break;
+            }
+        }
 
     }
 
@@ -452,6 +521,7 @@ public class RotatingChart extends ViewGroup {
         private float mRotation = 0;
         private Matrix mTransform = new Matrix();
         private PointF mPivot = new PointF();
+        RectF mBounds;
 
         /**
          * Constructor.
@@ -494,7 +564,6 @@ public class RotatingChart extends ViewGroup {
             }
         }
 
-        RectF mBounds;
 
         @Override
         protected void onSizeChanged(int w, int h, int oldw, int oldh) {
@@ -595,11 +664,20 @@ public class RotatingChart extends ViewGroup {
             }
             return true;
         }
+
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
+            //return super.onSingleTapConfirmed(e);
+
+            // TODO
+
+            Log.d(TAG, "Single tap confirmed");
+            return true;
+        }
     }
 
     private boolean isAnimationRunning() {
-        // ...
-        return false;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB && mAutoCenterAnimator.isRunning();
     }
 
     private static float vectorToScalarScroll(float dx, float dy, float x, float y) {
